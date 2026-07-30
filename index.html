@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BakerPronos - Zòn VIP Eksklizif</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: sans-serif; background-color: #0b132b; color: #ffffff; padding: 15px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+    .box { background: #1c2541; padding: 20px; border-radius: 12px; border: 1px solid #8b5cf6; text-align: center; max-width: 450px; width: 100%; }
+    h2 { color: #c084fc; margin-bottom: 12px; font-size: 18px; }
+    p { font-size: 13px; color: #cbd5e1; margin-bottom: 15px; line-height: 1.4; }
+    .match-card { background: #0b132b; padding: 12px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #3a506b; text-align: left; }
+    .btn { background: #3b82f6; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; width: 100%; cursor: pointer; font-size: 14px; margin-top: 15px; }
+  </style>
+</head>
+<body>
+
+  <div class="box" id="vipContentBox">
+    <h2>👑 Pwosesis Aksè VIP</h2>
+    <p id="statusMsg">Ap verifye kòd ak validite lyen ou an...</p>
+  </div>
+
+  <script>
+    function checkVipAccess() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const linkCode = urlParams.get('code');
+      const msgBox = document.getElementById("statusMsg");
+      const boxContainer = document.getElementById("vipContentBox");
+
+      if (!linkCode) {
+        boxContainer.style.borderColor = "#ef4444";
+        msgBox.innerHTML = "❌ Okenn kòd VIP pa jwenn nan lyen sa a!<br><br>Tanpri itilize lyen ofisyèl ou te resevwa sou WhatsApp la.";
+        return;
+      }
+
+      // Al chache baz done lyen admin yo te kreye yo
+      let linksDb = JSON.parse(localStorage.getItem("baker_vip_links")) || [];
+      let foundLink = linksDb.find(l => l.code === linkCode);
+
+      if (!foundLink) {
+        boxContainer.style.borderColor = "#ef4444";
+        msgBox.innerHTML = "❌ Kòd sa a pa valab oswa li pa egziste sou sistèm nan!";
+        return;
+      }
+
+      // Tcheke si tan an ekspire
+      let now = new Date().getTime();
+      if (now > foundLink.expiryTime) {
+        boxContainer.style.borderColor = "#ef4444";
+        msgBox.innerHTML = `❌ Malerezman, lyen VIP sa a ekspire depi dat: <b style="color:#ef4444;">${foundLink.dateStr}</b>.<br><br>Kontakte BakerPronos sou WhatsApp pou w renouvle l.`;
+        return;
+      }
+
+      // Si tout bagay bon, chaje match VIP yo ki soti nan Admin nan
+      boxContainer.style.borderColor = "#10b981";
+      boxContainer.style.maxWidth = "550px";
+
+      let vipPredictions = JSON.parse(localStorage.getItem("baker_vip_pronos")) || [];
+      let matchesHtml = "";
+
+      if (vipPredictions.length === 0) {
+        matchesHtml = `<p style="font-size:12px; color:#cbd5e1; text-align:center; padding:15px;">Okenn match VIP poko pibliye sou panèl admin lan. Tcheke pita!</p>`;
+      } else {
+        vipPredictions.forEach(m => {
+          matchesHtml += `
+            <div class="match-card">
+              <div style="display:flex; justify-content:space-between; font-size:11px; color:#5bc0be; font-weight:bold; margin-bottom:6px;">
+                <span>${m.league || 'Lig VIP'}</span>
+                <span>🕒 ${m.date} ${m.time || ''}</span>
+              </div>
+              <div style="font-size:14px; font-weight:900; margin:6px 0; color:#fff; text-align:center;">
+                ${m.home} <span style="color:#6fffe9;">VS</span> ${m.away}
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; font-size:13px; color:#6fffe9; font-weight:900; background:#1c2541; padding:6px 8px; border-radius:5px;">
+                <span>TIP: ${m.prono}</span>
+                <span style="color:#ffffff; background:#2563eb; padding:2px 6px; border-radius:4px;">Cote: ${m.odds || '1.00'}</span>
+              </div>
+            </div>
+          `;
+        });
+      }
+
+      boxContainer.innerHTML = `
+        <h2 style="color:#10b981;">👑 BAKERPRONOS - ZÒN VIP</h2>
+        <div style="background:#065f46; color:#a7f3d0; padding:8px; border-radius:6px; font-size:11px; font-weight:bold; text-align:center; margin-bottom:12px;">
+          Kliyan: <b>${foundLink.clientName}</b> | ⏳ Espirasyon: ${foundLink.dateStr}
+        </div>
+        <div style="max-height: 55vh; overflow-y: auto; text-align: left; padding-right: 4px;">
+          ${matchesHtml}
+        </div>
+        <button class="btn" onclick="window.location.href='index.html'">Retounen nan Akèy la 🏠</button>
+      `;
+    }
+
+    window.onload = checkVipAccess;
+  </script>
+</body>
+</html>
